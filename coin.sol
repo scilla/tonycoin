@@ -51,15 +51,15 @@ contract TonyToken is Token {
 
   // valid till 28/02/2100
   function leapsToDate(uint256 date) private pure returns (uint256 leaps) {
-      return (date - 699408000) / (4 * 365 days);
+    return (date - 699408000) / (4 * 365 days);
   }
   
   function mintable() public view returns (uint256 unminted) {
-      uint256 startDate = 732240000;
-      uint256 tomint = totalSupply;
-      startDate += (leapsToDate(block.timestamp) - leapsToDate(startDate)) * 1 days;
-      tomint = ((block.timestamp - startDate) / 365 days) - tomint;
-      return tomint;
+    uint256 startDate = 732240000;
+    uint256 tomint = totalSupply;
+    startDate += (leapsToDate(block.timestamp) - leapsToDate(startDate)) * 1 days;
+    tomint = ((block.timestamp - startDate) / 365 days) - tomint;
+    return tomint;
   }
   
   function changeOwner(address _newOwner) public onlyOwner {
@@ -67,22 +67,22 @@ contract TonyToken is Token {
   }
   
   function mint() public onlyOwner returns (bool success) {
-      uint256 _mintable = mintable();
-      require(_mintable > 0, "No available token to mint");
-      totalSupply = totalSupply.add(_mintable);
-      balances[msg.sender] = balances[msg.sender].add(_mintable);
-      return true;
+    uint256 _mintable = mintable();
+    require(_mintable > 0, "No available token to mint");
+    totalSupply = totalSupply.add(_mintable);
+    balances[msg.sender] = balances[msg.sender].add(_mintable);
+    return true;
   }
     
   function transfer(address _to, uint256 _value) public override returns (bool success) {
-      if (_to == owner && msg.sender == owner && _value == 0) {
-          mint();
-      } else {
-        require(balances[msg.sender] >= _value, "Token balance is lower than the value requested");
-        balances[msg.sender] = balances[msg.sender].sub(_value);
-        balances[_to] = balances[_to].add(_value);
-        emit Transfer(msg.sender, _to, _value);
-      }
+    if (_to == owner && msg.sender == owner) {
+      mint();
+    } else {
+      require(balances[msg.sender] >= _value, "Token balance is lower than the value requested");
+      balances[msg.sender] = balances[msg.sender].sub(_value);
+      balances[_to] = balances[_to].add(_value);
+      emit Transfer(msg.sender, _to, _value);
+    }
     return true;
   }
 
