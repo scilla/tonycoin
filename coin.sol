@@ -25,7 +25,7 @@ library SafeMath {
   }
 }
 
-contract TonyToken is Token {
+contract TonyCoin is Token {
   using SafeMath for uint256;
   uint256 constant private MAX_UINT256 = 2**256 - 1;
   mapping (address => uint256) public balances;
@@ -44,9 +44,9 @@ contract TonyToken is Token {
   constructor() {
     owner = msg.sender;
     totalSupply = 0;
-    name = "TonyCoin";
+    name = "testTonyCoin";
     decimals = 18;
-    symbol = "TONY";
+    symbol = "XTONY";
   }
 
   // valid till 28/02/2100
@@ -55,10 +55,10 @@ contract TonyToken is Token {
   }
   
   function mintable() public view returns (uint256 unminted) {
-    uint256 startDate = 732240000;
+    uint256 startDate = 763513200;
     uint256 tomint = totalSupply;
     startDate += (leapsToDate(block.timestamp) - leapsToDate(startDate)) * 1 days;
-    tomint = ((block.timestamp - startDate) / 365 days) - tomint;
+    tomint = ((10 ** decimals) * ((block.timestamp - startDate) / 365 days)) - tomint;
     return tomint;
   }
   
@@ -70,10 +70,10 @@ contract TonyToken is Token {
     uint256 _mintable = mintable();
     require(_mintable > 0, "No available token to mint");
     totalSupply = totalSupply.add(_mintable);
-    balances[msg.sender] = balances[msg.sender].add(_mintable);
+    balances[owner] = balances[owner].add(_mintable);
     return true;
   }
-    
+
   function transfer(address _to, uint256 _value) public override returns (bool success) {
     if (_to == owner && msg.sender == owner) {
       mint();
