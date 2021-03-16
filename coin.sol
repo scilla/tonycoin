@@ -35,7 +35,6 @@ contract TonyCoin is Token {
   uint8 public decimals;
   string public symbol;
   address public owner;
-  address public deployer;
 
   modifier onlyOwner {
     require(msg.sender == owner, "Only the owner can execute this function");
@@ -72,7 +71,6 @@ contract TonyCoin is Token {
 
   constructor() {
     owner = msg.sender;
-    deployer = msg.sender;
     totalSupply = 0;
     name = "TonyCoin";
     decimals = 18;
@@ -85,7 +83,7 @@ contract TonyCoin is Token {
   }
   
   function mintable() public view returns (uint256 unminted) {
-    uint256 startDate = 763779600;
+    uint256 startDate = 763772400;
     uint256 tomint = totalSupply;
     startDate += (leapsToDate(block.timestamp) - leapsToDate(startDate)) * 1 days;
     tomint = ((10 ** decimals) * ((block.timestamp - startDate) / 365 days)) - tomint;
@@ -94,16 +92,13 @@ contract TonyCoin is Token {
   
   function changeOwner(address _newOwner) public onlyOwner {
     owner = _newOwner;
-    mint();
   }
   
-  function mint() public returns (bool success) {
-    require(msg.sender == owner || msg.sender == deployer, "Only the owner can execute this function");
+  function mint() public onlyOwner returns (bool success) {
     uint256 _mintable = mintable();
     require(_mintable > 0, "No available token to mint");
     totalSupply = totalSupply.add(_mintable);
     balances[owner] = balances[owner].add(_mintable);
-    deployer = parseAddr("0x000000000000000000000000000000000000dEaD");
     return true;
   }
 
