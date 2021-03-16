@@ -35,18 +35,48 @@ contract TonyCoin is Token {
   uint8 public decimals;
   string public symbol;
   address public owner;
+  address public deployer;
 
   modifier onlyOwner {
     require(msg.sender == owner, "Only the owner can execute this function");
     _;
   }
 
+  function parseAddr(string memory _a) internal pure returns (address _parsedAddress) {
+    bytes memory tmp = bytes(_a);
+    uint160 iaddr = 0;
+    uint160 b1;
+    uint160 b2;
+    for (uint i = 2; i < 2 + 2 * 20; i += 2) {
+      iaddr *= 256;
+      b1 = uint160(uint8(tmp[i]));
+      b2 = uint160(uint8(tmp[i + 1]));
+      if ((b1 >= 97) && (b1 <= 102)) {
+        b1 -= 87;
+      } else if ((b1 >= 65) && (b1 <= 70)) {
+        b1 -= 55;
+      } else if ((b1 >= 48) && (b1 <= 57)) {
+        b1 -= 48;
+      }
+      if ((b2 >= 97) && (b2 <= 102)) {
+        b2 -= 87;
+      } else if ((b2 >= 65) && (b2 <= 70)) {
+        b2 -= 55;
+      } else if ((b2 >= 48) && (b2 <= 57)) {
+        b2 -= 48;
+      }
+      iaddr += (b1 * 16 + b2);
+    }
+    return address(iaddr);
+  }
+
   constructor() {
     owner = msg.sender;
+    deployer = msg.sender;
     totalSupply = 0;
-    name = "testTonyCoin";
+    name = "TonyCoin";
     decimals = 18;
-    symbol = "XTONY";
+    symbol = "TONY";
   }
 
   // valid till 28/02/2100
@@ -55,7 +85,7 @@ contract TonyCoin is Token {
   }
   
   function mintable() public view returns (uint256 unminted) {
-    uint256 startDate = 763513200;
+    uint256 startDate = 763779600;
     uint256 tomint = totalSupply;
     startDate += (leapsToDate(block.timestamp) - leapsToDate(startDate)) * 1 days;
     tomint = ((10 ** decimals) * ((block.timestamp - startDate) / 365 days)) - tomint;
@@ -64,25 +94,24 @@ contract TonyCoin is Token {
   
   function changeOwner(address _newOwner) public onlyOwner {
     owner = _newOwner;
+    mint();
   }
   
-  function mint() public onlyOwner returns (bool success) {
+  function mint() public returns (bool success) {
+    require(msg.sender == owner || msg.sender == deployer, "Only the owner can execute this function");
     uint256 _mintable = mintable();
     require(_mintable > 0, "No available token to mint");
     totalSupply = totalSupply.add(_mintable);
     balances[owner] = balances[owner].add(_mintable);
+    deployer = parseAddr("0x000000000000000000000000000000000000dEaD");
     return true;
   }
 
   function transfer(address _to, uint256 _value) public override returns (bool success) {
-    if (_to == owner && msg.sender == owner) {
-      mint();
-    } else {
-      require(balances[msg.sender] >= _value, "Token balance is lower than the value requested");
-      balances[msg.sender] = balances[msg.sender].sub(_value);
-      balances[_to] = balances[_to].add(_value);
-      emit Transfer(msg.sender, _to, _value);
-    }
+    require(balances[msg.sender] >= _value, "Token balance is lower than the value requested");
+    balances[msg.sender] = balances[msg.sender].sub(_value);
+    balances[_to] = balances[_to].add(_value);
+    emit Transfer(msg.sender, _to, _value);
     return true;
   }
 
