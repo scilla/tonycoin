@@ -1,5 +1,5 @@
 # tonycoin
-Binance Smart Chain token, gift for my friend Tony
+Ethereum Virtual Machine compatible token, gift for my friend Tony
 
 - totalSupply = years passed since startDate
 - leapsToDate() lags a days every 100 years
